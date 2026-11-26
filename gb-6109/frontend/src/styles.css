@@ -115,3 +115,21 @@ td a[aria-current=true] { font-weight: 750; }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation: none !important; transition: none !important; }
 }
+
+/* 共享复演页池时间线 */
+.pool-hint { color: var(--muted); margin-bottom: .85rem; overflow-wrap: anywhere; }
+.pool-timeline td:nth-child(1) { white-space: nowrap; font-variant-numeric: tabular-nums; color: var(--muted); }
+.pool-timeline .pool-note { min-width: 16rem; }
+.pool-event {
+  display: inline-block; font-size: .82rem; font-weight: 700; padding: .18rem .55rem;
+  border-radius: var(--radius); border-inline-start: .2rem solid currentColor; background: var(--tint);
+  white-space: nowrap;
+}
+.ev-queue { color: var(--muted); }
+.ev-wait { color: oklch(.5 .12 75); }
+.ev-grant { color: var(--accent); }
+.ev-cut { color: var(--signal); }
+.ev-resume { color: oklch(.45 .11 150); }
+.ev-finish { color: var(--accent); }
+.ev-return { color: oklch(.42 .09 220); }
+.ev-reject { color: var(--signal); background: oklch(.95 .03 25); }

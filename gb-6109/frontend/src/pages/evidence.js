@@ -1,6 +1,7 @@
 import { api } from "../api/workbench.js";
 import { errorText, field } from "../components/common/fields.js";
 import { empty, pageHeading, section } from "../components/common/panel.js";
+import { sharedPoolReplay } from "../components/common/pool_replay.js";
 import { resultTable } from "../components/common/table.js";
 import { submit } from "../hooks/submit.js";
 import { el } from "../utils/dom.js";
@@ -45,6 +46,7 @@ export async function evidencePage(config, user, route) {
   const options = el("select", {"aria-label": "选择已完成的批次", onchange: event => {
     location.hash = `evidence/${event.target.value}`;
   }}, runs.map(item => el("option", {value: item.id, selected: item.id === run.id}, `#${item.id} ${item.case_title}`)));
+  const poolView = sharedPoolReplay(run.result);
   return el("div", {class: "page evidence"},
     pageHeading(config.modules[3], run.case_title, button),
     issue, options,
@@ -52,6 +54,9 @@ export async function evidencePage(config, user, route) {
       el("details", {}, el("summary", {}, "证据摘要"), el("code", {}, run.digest))),
     el("dl", {class: "metrics"}, Object.entries(run.result.metrics).map(([label, value]) =>
       el("div", {}, el("dt", {}, label), el("dd", {}, cell(value))))),
-    section("业务结果明细", run.result.rows.length ? resultTable(run.result.rows) : empty("此批次无明细。")),
+    ...(poolView || []),
+    run.result.kind === "shared_pool"
+      ? null
+      : section("业务结果明细", run.result.rows.length ? resultTable(run.result.rows) : empty("此批次无明细。")),
     section("复核签署", signing));
 }

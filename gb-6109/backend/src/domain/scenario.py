@@ -1,20 +1,21 @@
 from .fixtures import FIXTURES
 from .pager import PageBudgetExceeded, ShadowPager
+from .pool_scenario import normalize_pool, run_shared
 from .recipe import recipe_set
 
 
 CONFIG = {
     "title": "岑砾道料·道砟配方影子页签发",
     "team": "岑砾道料 8 人试配与线下签发小组",
-    "description": "用影子分页提交配方，对照断电前后有效根和可复用页，再安排生产签发。",
-    "direction": "影子分页与写时复制发布",
-    "mechanism": "不可变配方页、原子根指针切换、引用保护及孤儿页回收。",
+    "description": "用影子分页提交配方，对照断电前后有效根和可复用页；多张签发单可共用一份复演页额，按整批峰值公平领页。",
+    "direction": "影子分页、写时复制发布与共享页池调度",
+    "mechanism": "不可变配方页、原子根指针切换、引用保护及孤儿页回收；共享页池按峰值整批领页、断电暂占不回收、做完一次归还。",
     "modules": ["道料交班", "配方签发单", "发布重演", "可见配方根"],
     "unit": "配方签发单",
     "max_parameter": 128,
     "parameter_label": "可用物理页数（1–128）",
     "default_parameter": 5,
-    "facts": ["已发布根次", "回收页次", "预算拒绝"],
+    "facts": ["峰值整批领页", "断电暂占不回收", "公平防插队"],
     "palette": 9,
     "fixture": "BR-K7-1124 / K7 段",
 }
@@ -47,7 +48,10 @@ def normalize(payload):
 
 
 def validate(payload):
-    normalize(payload)
+    if isinstance(payload, dict) and payload.get("mode") == "shared_pool":
+        normalize_pool(payload)
+    else:
+        normalize(payload)
 
 
 def page_list(page_ids):
@@ -55,6 +59,10 @@ def page_list(page_ids):
 
 
 def run(payload, parameter, db):
+    if isinstance(payload, dict) and payload.get("mode") == "shared_pool":
+        if not 1 <= parameter <= CONFIG["max_parameter"]:
+            raise ValueError(f"共享页池总额须在 1 至 {CONFIG['max_parameter']} 之间")
+        return run_shared(payload, parameter)
     initial, keep, events = normalize(payload)
     if parameter < len(initial):
         raise ValueError("物理页预算放不下初始配方根")

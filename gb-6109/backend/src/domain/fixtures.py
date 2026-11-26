@@ -39,4 +39,49 @@ FIXTURES = [
             ],
         },
     },
+    {
+        "code": "BR-POOL-1124",
+        "title": "共享复演页池·多批次公平领页",
+        "description": "四张签发单共用 5 页：大单先到占满，小单让行先跑，大单被让行两次后成为屏障，超额单整单退回，含一次断电中断后用原额度续跑。",
+        "payload": {
+            "mode": "shared_pool",
+            "batches": [
+                {"id": "B-大单-01", "peak": 3, "duration": 4, "arrival": 0},
+                {"id": "B-小单-02", "peak": 2, "duration": 2, "arrival": 1},
+                {"id": "B-小单-03", "peak": 2, "duration": 2, "arrival": 2},
+                {"id": "B-小单-04", "peak": 1, "duration": 1, "arrival": 3},
+                {"id": "B-超额-05", "peak": 6, "duration": 2, "arrival": 3},
+                {"id": "B-断电-06", "peak": 2, "duration": 4, "arrival": 4,
+                 "interrupt": {"after": 1, "resume_after": 2}},
+            ],
+        },
+    },
+    {
+        "code": "BR-POOL-1125",
+        "title": "共享复演页池·断电暂占与一次归还",
+        "description": "两批同峰值错峰到达；先跑批次中断期间页不回收，续跑沿用原额度，做完只还一次，后到批次随后整批领页。",
+        "payload": {
+            "mode": "shared_pool",
+            "batches": [
+                {"id": "B-A", "peak": 2, "duration": 3, "arrival": 0,
+                 "interrupt": {"after": 1, "resume_after": 2}},
+                {"id": "B-B", "peak": 2, "duration": 2, "arrival": 1},
+            ],
+        },
+    },
+    {
+        "code": "BR-POOL-1126",
+        "title": "共享复演页池·大单屏障防饥饿",
+        "description": "5 页池里先跑一个占 4 页的长单，大单（4 页）排队，两个 1 页小单在剩余额度内越过大单先跑；大单被越过两次后成为队列屏障，第三个小单即使 1 页够用也必须等，长单归还后大单优先放行。",
+        "payload": {
+            "mode": "shared_pool",
+            "batches": [
+                {"id": "B-占位长单", "peak": 4, "duration": 5, "arrival": 0},
+                {"id": "B-大单", "peak": 4, "duration": 2, "arrival": 1},
+                {"id": "B-小单甲", "peak": 1, "duration": 1, "arrival": 2},
+                {"id": "B-小单乙", "peak": 1, "duration": 1, "arrival": 3},
+                {"id": "B-小单丙", "peak": 1, "duration": 1, "arrival": 4},
+            ],
+        },
+    },
 ]
